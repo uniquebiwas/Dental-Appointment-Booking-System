@@ -1,17 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="dashboard-shell">
-    <aside class="sidebar">
-        <h4 class="fw-bold mb-4">Admin Console</h4>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Overview</a>
-            <a class="nav-link" href="{% url 'admin_users' %}"><i class="bi bi-people me-2"></i>Users</a>
-            <a class="nav-link" href="{% url 'reports' %}"><i class="bi bi-graph-up me-2"></i>Reports</a>
-            <a class="nav-link" href="{% url 'reminders' %}"><i class="bi bi-bell me-2"></i>Reminders</a>
-            <a class="nav-link" href="{% url 'notifications' %}"><i class="bi bi-chat-square-text me-2"></i>Notifications</a>
-            <a class="nav-link" data-swal-confirm href="{% url 'logout' %}" data-title="Logout" data-text="Are you sure you want to sign out?" data-confirm-button-text="Logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
-        </nav>
-    </aside>
+    {% include 'dashboard/_sidebar.html' %}
     <div class="main-panel">
         <div class="card-soft p-4 p-md-5">
         <div>

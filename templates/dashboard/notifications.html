@@ -1,24 +1,54 @@
 {% extends 'base.html' %}
+{% load status_tags %}
 {% block content %}
 <div class="dashboard-shell">
-    <aside class="sidebar">
-        <h4 class="fw-bold mb-4">Notifications</h4>
-        <nav class="nav flex-column">
-            <a class="nav-link active" href="{% url 'notifications' %}"><i class="bi bi-bell me-2"></i>Notifications</a>
-            <a class="nav-link" href="{% url 'home' %}"><i class="bi bi-house-door me-2"></i>Home</a>
-            <a class="nav-link" data-swal-confirm href="{% url 'logout' %}" data-title="Logout" data-text="Are you sure you want to log out?" data-confirm-button-text="Logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
-        </nav>
-    </aside>
+    {% include 'dashboard/_sidebar.html' %}
     <div class="main-panel">
-    <h3 class="fw-bold mb-3">Notifications</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">Notifications</h3>
+        {% if unread_count %}
+        <form method="post" action="{% url 'mark_all_notifications_read' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-primary">Mark all as read</button>
+        </form>
+        {% endif %}
+    </div>
     <div class="d-flex flex-column gap-3">
         {% for notification in notifications %}
-        <div class="border rounded-3 p-3">
+        <div class="border rounded-3 p-3 notification-open" data-pk="{{ notification.pk }}" data-is-read="{{ notification.is_read|yesno:"true,false" }}" data-has-appointment="{% if notification.appointment %}true{% else %}false{% endif %}" data-title="{{ notification.title|escape }}" data-message="{{ notification.message|escape }}" {% if notification.appointment %}data-appointment-id="{{ notification.appointment.appointment_id|escape }}" data-appointment-patient="{{ notification.appointment.patient|escape }}" data-appointment-dentist="Dr. {{ notification.appointment.dentist.user.get_full_name|default:notification.appointment.dentist.user.username|escape }}" data-appointment-service="{{ notification.appointment.service.name|escape }}" data-appointment-date="{{ notification.appointment.appointment_date|date:'M. d, Y' }}" data-appointment-time="{{ notification.appointment.start_time|time:'g:i a' }} - {{ notification.appointment.end_time|time:'g:i a' }}" data-appointment-status="{{ notification.appointment.status|escape }}" data-appointment-notes="{{ notification.appointment.notes|default_if_none:''|escape }}"{% endif %}>
             <div class="d-flex justify-content-between align-items-start">
-                <strong>{{ notification.title }}</strong>
-                <span class="pill pill-success">new</span>
+                <div>
+                    <strong>{{ notification.title }}</strong>
+                    {% if not notification.is_read %}<span class="pill pill-success ms-2">new</span>{% endif %}
+                </div>
+                <div>
+                    {% if not notification.is_read %}
+                    <form method="post" action="{% url 'mark_notification_read' notification.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-primary">Mark as read</button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted small">Read</span>
+                    {% endif %}
+                </div>
             </div>
-            <div class="text-muted mt-2">{{ notification.message }}</div>
+            <div class="text-muted mt-2 notif-message">{{ notification.message }}</div>
+            {% if notification.appointment %}
+            <div class="mt-3 p-2 bg-light rounded">
+                <strong>Appointment Summary</strong>
+                <div>ID: {{ notification.appointment.appointment_id }}</div>
+                <div>Patient: {{ notification.appointment.patient }}</div>
+                <div>Dentist: Dr. {{ notification.appointment.dentist.user.get_full_name|default:notification.appointment.dentist.user.username }}</div>
+                <div>Service: {{ notification.appointment.service.name }}</div>
+                <div>Date: {{ notification.appointment.appointment_date|date:"M. d, Y" }}</div>
+                <div>Time: {{ notification.appointment.start_time|time:"g:i a" }} - {{ notification.appointment.end_time|time:"g:i a" }}</div>
+                <div>Status: <span class="pill {{ notification.appointment.status|status_badge_class }}">{{ notification.appointment.status }}</span></div>
+                {% if notification.appointment.notes %}
+                <div class="mt-2"><strong>Comments:</strong> <div class="text-muted small">{{ notification.appointment.notes|truncatechars:140 }}</div></div>
+                {% endif %}
+                <div class="mt-2"><a href="{% url 'appointment_detail' notification.appointment.pk %}" class="btn btn-sm btn-outline-secondary">View appointment</a></div>
+            </div>
+            {% endif %}
             <small class="text-muted">{{ notification.created_at }}</small>
         </div>
         {% empty %}
@@ -26,4 +56,127 @@
         {% endfor %}
     </div>
 </div>
+
+<div class="modal fade" id="notificationDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Notification details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Title:</strong> <span id="notifDetailTitle"></span></p>
+                <p><strong>Message:</strong> <span id="notifDetailMessage"></span></p>
+                <div id="notifDetailAppointment" class="mt-3" style="display: none;">
+                    <hr>
+                    <h6>Appointment details</h6>
+                    <div><strong>ID:</strong> <span id="notifDetailApptId"></span></div>
+                    <div><strong>Patient:</strong> <span id="notifDetailApptPatient"></span></div>
+                    <div><strong>Dentist:</strong> <span id="notifDetailApptDentist"></span></div>
+                    <div><strong>Service:</strong> <span id="notifDetailApptService"></span></div>
+                    <div><strong>Date:</strong> <span id="notifDetailApptDate"></span></div>
+                    <div><strong>Time:</strong> <span id="notifDetailApptTime"></span></div>
+                    <div><strong>Status:</strong> <span id="notifDetailApptStatus"></span></div>
+                    <div id="notifDetailApptNotesRow" class="mt-2" style="display: none;"><strong>Comments:</strong> <div class="text-muted small" id="notifDetailApptNotes"></div></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.notification-open').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+            if (e.target.closest('a,button,form,input,select,textarea')) return;
+            const pk = el.dataset.pk;
+            const markUrl = `/notifications/${pk}/mark-read/`;
+            fetch(markUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    const newBadge = el.querySelector('.pill.pill-success');
+                    if (newBadge) newBadge.remove();
+                    const markForm = el.querySelector('form');
+                    if (markForm) {
+                        markForm.innerHTML = '<span class="text-muted small">Read</span>';
+                    }
+                    el.dataset.isRead = 'true';
+                    const unreadBadge = document.querySelector('.nav-link[href$="/notifications/"] .badge.bg-danger');
+                    if (unreadBadge) {
+                        if (data.unread_count > 0) {
+                            unreadBadge.innerText = data.unread_count;
+                        } else {
+                            unreadBadge.remove();
+                        }
+                    }
+                }
+                const title = el.dataset.title || '';
+                const message = el.dataset.message || '';
+                const detailModal = document.getElementById('notificationDetailModal');
+                const hasAppointment = el.dataset.hasAppointment === 'true';
+                if (detailModal) {
+                    detailModal.querySelector('#notifDetailTitle').innerText = title;
+                    detailModal.querySelector('#notifDetailMessage').innerText = message;
+                    const apptSection = detailModal.querySelector('#notifDetailAppointment');
+                    if (hasAppointment) {
+                        apptSection.style.display = 'block';
+                        detailModal.querySelector('#notifDetailApptId').innerText = el.dataset.appointmentId || '';
+                        detailModal.querySelector('#notifDetailApptPatient').innerText = el.dataset.appointmentPatient || '';
+                        detailModal.querySelector('#notifDetailApptDentist').innerText = el.dataset.appointmentDentist || '';
+                        detailModal.querySelector('#notifDetailApptService').innerText = el.dataset.appointmentService || '';
+                        detailModal.querySelector('#notifDetailApptDate').innerText = el.dataset.appointmentDate || '';
+                        detailModal.querySelector('#notifDetailApptTime').innerText = el.dataset.appointmentTime || '';
+                        detailModal.querySelector('#notifDetailApptStatus').innerText = el.dataset.appointmentStatus || '';
+                        const notes = el.dataset.appointmentNotes || '';
+                        const notesRow = detailModal.querySelector('#notifDetailApptNotesRow');
+                        if (notes) {
+                            notesRow.style.display = 'block';
+                            detailModal.querySelector('#notifDetailApptNotes').innerText = notes;
+                        } else {
+                            notesRow.style.display = 'none';
+                        }
+                    } else {
+                        apptSection.style.display = 'none';
+                    }
+                    new bootstrap.Modal(detailModal).show();
+                }
+            }).catch(() => {
+                const title = el.dataset.title || 'Notification';
+                const message = el.dataset.message || '';
+                const detailModal = document.getElementById('notificationDetailModal');
+                if (detailModal) {
+                    detailModal.querySelector('#notifDetailTitle').innerText = title;
+                    detailModal.querySelector('#notifDetailMessage').innerText = message;
+                    detailModal.querySelector('#notifDetailAppointment').style.display = 'none';
+                    new bootstrap.Modal(detailModal).show();
+                }
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -7,8 +7,10 @@
             <h1 class="display-5 fw-bold mb-3">Your smile deserves a seamless care experience.</h1>
             <p class="lead mb-4">Book visits, coordinate treatment plans, and keep every patient interaction beautifully organized.</p>
             <div class="d-flex flex-wrap gap-2">
-                <a class="btn btn-light text-primary fw-semibold" href="{% url 'register' %}">Book Appointment</a>
+                <a class="btn btn-light text-primary fw-semibold" href="{% url 'book_appointment' %}">Book Appointment</a>
+                {% if not user.is_authenticated %}
                 <a class="btn btn-outline-light" href="{% url 'login' %}">Patient Login</a>
+                {% endif %}
             </div>
         </div>
         <div class="col-lg-5"><div class="hero-visual rounded-4 shadow"></div></div>
@@ -44,7 +46,7 @@
 <section class="mb-5">
     <div class="row g-4 align-items-center">
         <div class="col-lg-6"><h3 class="section-title">Why choose SmileCare</h3><div class="d-flex flex-column gap-3">{% for step in '123' %}<div class="card-soft p-3 d-flex align-items-center gap-3"><div class="step-pill">{{ forloop.counter }}</div><div><strong>{% if forloop.counter == 1 %}Care that feels personal{% elif forloop.counter == 2 %}Clear communication{% else %}A secure modern platform{% endif %}</strong><div class="text-muted small">{% if forloop.counter == 1 %}Every visit is coordinated around the patient experience.{% elif forloop.counter == 2 %}Patients receive reminders and updates at every stage.{% else %}Admins, staff and clinicians all work from the same view.{% endif %}</div></div></div>{% endfor %}</div></div>
-        <div class="col-lg-6"><div class="card-soft p-4"><h5 class="mb-3">Patient testimonials</h5><div class="d-flex flex-column gap-3"><div class="border rounded-3 p-3"><div class="text-warning mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div><p class="mb-2">“The booking experience was effortless and the reminder system kept everything on track.”</p><strong>— Maya R. (Demo)</strong></div><div class="border rounded-3 p-3"><div class="text-warning mb-2"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div><p class="mb-2">“The dashboard made it easier for our clinic to manage appointments and patient communication.”</p><strong>— Dr. N. Patel (Demo)</strong></div></div></div></div>
+        <div class="col-lg-6"><div class="card-soft p-4"><h5 class="mb-3">Patient testimonials</h5><div class="d-flex flex-column gap-3">{% for review in testimonials %}<div class="border rounded-3 p-3"><div class="text-warning mb-2">{% for _ in '12345' %}{% if forloop.counter <= review.rating %}<i class="bi bi-star-fill"></i>{% else %}<i class="bi bi-star" style="opacity:.4"></i>{% endif %}{% endfor %}</div><p class="mb-2">“{{ review.quote }}”</p><strong>— {{ review.author }}</strong></div>{% empty %}<div class="border rounded-3 p-3"><p class="mb-0 text-muted">No testimonials available yet.</p></div>{% endfor %}</div></div></div>
     </div>
 </section>
 

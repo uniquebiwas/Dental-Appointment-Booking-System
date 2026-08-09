@@ -3,9 +3,8 @@
 <div class="dashboard-shell">
     {% include 'dashboard/_sidebar.html' %}
     <div class="main-panel">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h3 class="mb-3">Cancel Appointment</h3>
+        <div class="card-soft p-4">
+                <h3 class="fw-bold mb-3">Cancel Appointment</h3>
                 <form method="post">
                     {% csrf_token %}
                     <div class="mb-3">

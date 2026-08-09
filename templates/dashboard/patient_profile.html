@@ -1,25 +1,23 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="dashboard-shell">
-    <aside class="sidebar">
-        <h4 class="fw-bold mb-4">Patient Profile</h4>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="{% url 'patient_dashboard' %}"><i class="bi bi-columns-gap me-2"></i>Overview</a>
-            <a class="nav-link" href="{% url 'book_appointment' %}"><i class="bi bi-calendar-plus me-2"></i>Book</a>
-            <a class="nav-link active" href="{% url 'patient_profile' %}"><i class="bi bi-person-lines-fill me-2"></i>Profile</a>
-            <a class="nav-link" href="{% url 'patient_history' %}"><i class="bi bi-clock-history me-2"></i>History</a>
-            <a class="nav-link" href="{% url 'notifications' %}"><i class="bi bi-bell me-2"></i>Notifications</a>
-        </nav>
-    </aside>
+    {% include 'dashboard/_sidebar.html' %}
     <div class="main-panel">
-        <div class="card shadow-sm">
-    <div class="card-body">
-        <h3 class="mb-3">Patient Profile</h3>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button class="btn btn-primary" type="submit">Save</button>
-        </form>
-    </div>
-</div>
+        <div class="card-soft p-4 p-md-5">
+            <h3 class="fw-bold mb-4">Patient Profile</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    {% for field in form %}
+                    <div class="col-12">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% if field.errors %}<div class="text-danger small">{{ field.errors|join:', ' }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="btn btn-primary mt-4" type="submit">Save</button>
+            </form>
+        </div>
 {% endblock %}

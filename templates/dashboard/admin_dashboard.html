@@ -1,17 +1,8 @@
 {% extends 'base.html' %}
+{% load status_tags %}
 {% block content %}
 <div class="dashboard-shell">
-    <aside class="sidebar">
-        <h4 class="fw-bold mb-4">Admin Console</h4>
-        <nav class="nav flex-column">
-            <a class="nav-link active" href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Overview</a>
-            <a class="nav-link" href="{% url 'admin_users' %}"><i class="bi bi-people me-2"></i>Users</a>
-            <a class="nav-link" href="{% url 'reports' %}"><i class="bi bi-graph-up me-2"></i>Reports</a>
-            <a class="nav-link" href="{% url 'reminders' %}"><i class="bi bi-bell me-2"></i>Reminders</a>
-            <a class="nav-link" href="{% url 'notifications' %}"><i class="bi bi-chat-square-text me-2"></i>Notifications</a>
-            <a class="nav-link" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
-        </nav>
-    </aside>
+    {% include 'dashboard/_sidebar.html' %}
     <div class="main-panel">
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <div>
@@ -22,14 +13,56 @@
         </div>
 
         <div class="row g-4 mb-4">
-            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Total Patients</h6><h3 class="fw-bold">{{ patient_count }}</h3></div><div class="metric-icon"><i class="bi bi-person-hearts"></i></div></div></div></div></div>
-            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Total Dentists</h6><h3 class="fw-bold">{{ dentist_count }}</h3></div><div class="metric-icon"><i class="bi bi-people"></i></div></div></div></div></div>
-            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Today’s Appointments</h6><h3 class="fw-bold">{{ todays_appointments|length }}</h3></div><div class="metric-icon"><i class="bi bi-calendar2-week"></i></div></div></div></div></div>
+            <div class="col-md-4">
+                <div class="card-soft metric-card p-4">
+                    <div class="d-flex justify-content-between">
+                        <div><h6 class="text-muted">Total Patients</h6><h3 class="fw-bold">{{ patient_count }}</h3></div>
+                        <div class="metric-icon"><i class="bi bi-person-hearts"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-soft metric-card p-4">
+                    <div class="d-flex justify-content-between">
+                        <div><h6 class="text-muted">Total Dentists</h6><h3 class="fw-bold">{{ dentist_count }}</h3></div>
+                        <div class="metric-icon"><i class="bi bi-people"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-soft metric-card p-4">
+                    <div class="d-flex justify-content-between">
+                        <div><h6 class="text-muted">Today’s Appointments</h6><h3 class="fw-bold">{{ todays_appointments|length }}</h3></div>
+                        <div class="metric-icon"><i class="bi bi-calendar2-week"></i></div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="row g-4 mb-4">
-            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Pending Appointments</h6><h3 class="fw-bold">{{ pending_appointments }}</h3></div><div class="metric-icon"><i class="bi bi-hourglass-split"></i></div></div></div></div></div>
-            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Completed</h6><h3 class="fw-bold">{{ completed_count }}</h3></div><div class="metric-icon"><i class="bi bi-check2-circle"></i></div></div></div></div></div>
-            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">No-Shows</h6><h3 class="fw-bold">{{ no_show_count }}</h3></div><div class="metric-icon"><i class="bi bi-slash-circle"></i></div></div></div></div></div>
+            <div class="col-md-4">
+                <div class="card-soft metric-card p-4">
+                    <div class="d-flex justify-content-between">
+                        <div><h6 class="text-muted">Pending Appointments</h6><h3 class="fw-bold">{{ pending_appointments }}</h3></div>
+                        <div class="metric-icon"><i class="bi bi-hourglass-split"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-soft metric-card p-4">
+                    <div class="d-flex justify-content-between">
+                        <div><h6 class="text-muted">Completed</h6><h3 class="fw-bold">{{ completed_count }}</h3></div>
+                        <div class="metric-icon"><i class="bi bi-check2-circle"></i></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-soft metric-card p-4">
+                    <div class="d-flex justify-content-between">
+                        <div><h6 class="text-muted">No-Shows</h6><h3 class="fw-bold">{{ no_show_count }}</h3></div>
+                        <div class="metric-icon"><i class="bi bi-slash-circle"></i></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="row g-4 mb-4">
@@ -41,7 +74,7 @@
                             <thead><tr><th>Patient</th><th>Dentist</th><th>Time</th><th>Status</th></tr></thead>
                             <tbody>
                                 {% for appointment in todays_appointments %}
-                                <tr><td>{{ appointment.patient }}</td><td>{{ appointment.dentist }}</td><td>{{ appointment.start_time }}</td><td><span class="pill pill-warning">{{ appointment.status }}</span></td></tr>
+                                <tr><td>{{ appointment.patient }}</td><td>{{ appointment.dentist }}</td><td>{{ appointment.start_time }}</td><td><span class="pill {{ appointment.status|status_badge_class }}">{{ appointment.status }}</span></td></tr>
                                 {% empty %}<tr><td colspan="4"><div class="empty-state">No appointments scheduled for today.</div></td></tr>{% endfor %}
                             </tbody>
                         </table>

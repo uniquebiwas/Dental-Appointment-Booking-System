@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-shell">
+    {% include 'dashboard/_sidebar.html' %}
+    <div class="main-panel">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="card-soft p-4 p-md-5">
+                    <h3 class="fw-bold mb-3">{{ title }}</h3>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            {% for field in form %}
+                                <div class="col-md-6">
+                                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    <div class="{% if field.field.widget.input_type == 'checkbox' %}form-check{% endif %}">
+                                        {{ field }}
+                                    </div>
+                                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                                    {% if field.errors %}<div class="text-danger small">{{ field.errors|join:', ' }}</div>{% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button class="btn btn-primary mt-4" type="submit">Save availability</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

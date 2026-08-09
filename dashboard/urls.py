@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (admin_create_user, admin_dashboard, admin_edit_dentist, admin_edit_user, admin_user_detail,
-                    admin_users, approve_dentist, delete_user, home, notifications_view, reject_dentist,
-                    reset_password, toggle_user_status)
+                    admin_users, approve_dentist, change_password, delete_user, home, notifications_view, reject_dentist,
+                    reset_password, toggle_user_status, mark_all_notifications_read, mark_notification_read)
 
 urlpatterns = [
     path('', home, name='home'),
@@ -16,5 +16,8 @@ urlpatterns = [
     path('dashboard/admin/users/<int:pk>/toggle/', toggle_user_status, name='toggle_user_status'),
     path('dashboard/admin/users/<int:pk>/delete/', delete_user, name='delete_user'),
     path('dashboard/admin/users/<int:pk>/reset-password/', reset_password, name='reset_password'),
+    path('change-password/', change_password, name='change_password'),
     path('notifications/', notifications_view, name='notifications'),
+    path('notifications/mark-all-read/', mark_all_notifications_read, name='mark_all_notifications_read'),
+    path('notifications/<int:pk>/mark-read/', mark_notification_read, name='mark_notification_read'),
 ]

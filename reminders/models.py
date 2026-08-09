@@ -36,6 +36,7 @@ class Reminder(models.Model):
 
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='notifications', on_delete=models.CASCADE)
+    appointment = models.ForeignKey(Appointment, related_name='notifications_appt', null=True, blank=True, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     message = models.TextField()
     notification_type = models.CharField(max_length=50, default='info')

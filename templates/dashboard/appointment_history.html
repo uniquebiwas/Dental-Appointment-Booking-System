@@ -1,18 +1,17 @@
 {% extends 'base.html' %}
+{% load status_tags %}
 {% block content %}
 <div class="dashboard-shell">
-    <aside class="sidebar">
-        <h4 class="fw-bold mb-4">Reception Team</h4>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="{% url 'staff_dashboard' %}"><i class="bi bi-columns-gap me-2"></i>Overview</a>
-            <a class="nav-link" href="{% url 'book_appointment' %}"><i class="bi bi-calendar-plus me-2"></i>New Booking</a>
-            <a class="nav-link active" href="{% url 'appointment_history' %}"><i class="bi bi-list-ul me-2"></i>Appointments</a>
-            <a class="nav-link" href="{% url 'notifications' %}"><i class="bi bi-bell me-2"></i>Notifications</a>
-        </nav>
-    </aside>
+    {% include 'dashboard/_sidebar.html' %}
     <div class="main-panel">
         <div class="card-soft p-4">
             <h3 class="mb-3">Appointment History</h3>
+            <div class="d-flex mb-3 gap-2">
+                <form method="get" class="d-flex w-100">
+                    <input type="search" name="q" class="form-control" placeholder="Search appointments by ID, patient, dentist, service or status" value="{{ q }}">
+                    <button class="btn btn-primary ms-2" type="submit">Search</button>
+                </form>
+            </div>
             <div class="table-responsive">
                 <table class="table align-middle">
                     <thead>
@@ -23,6 +22,7 @@
                             <th>Date</th>
                             <th>Time</th>
                             <th>Status</th>
+                            <th>Comments</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -33,8 +33,37 @@
                             <td>{{ appointment.dentist }}</td>
                             <td>{{ appointment.appointment_date }}</td>
                             <td>{{ appointment.start_time }}</td>
-                            <td><span class="pill pill-warning">{{ appointment.status }}</span></td>
+                            <td><span class="pill {{ appointment.status|status_badge_class }}">{{ appointment.status }}</span></td>
+                            <td>
+                                                                {{ appointment.notes|default_if_none:""|truncatechars:80 }}
+                                                                {% if appointment.notes %}
+                                                                <div><button class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#apptModal{{ appointment.pk }}">View comment</button></div>
+                                                                {% endif %}
+                                                        </td>
                         </tr>
+                                                <!-- Modal for full comment -->
+                                                {% if appointment.notes %}
+                                                <div class="modal fade" id="apptModal{{ appointment.pk }}" tabindex="-1" aria-hidden="true">
+                                                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Appointment {{ appointment.appointment_id }} — Comment</h5>
+                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p><strong>Patient:</strong> {{ appointment.patient }}</p>
+                                                                <p><strong>Dentist:</strong> {{ appointment.dentist }}</p>
+                                                                <p><strong>Date:</strong> {{ appointment.appointment_date }}</p>
+                                                                <p><strong>Time:</strong> {{ appointment.start_time }} - {{ appointment.end_time }}</p>
+                                                                <hr>
+                                                                <h6>Full comment</h6>
+                                                                <p class="text-muted">{{ appointment.notes }}</p>
+                                                            </div>
+                                                            <div class="modal-footer"><a class="btn btn-outline-secondary" href="{% url 'appointment_detail' appointment.pk %}">Open details</a><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
                         {% empty %}
                         <tr><td colspan="6" class="text-muted">No appointments found.</td></tr>
                         {% endfor %}

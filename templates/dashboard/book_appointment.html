@@ -1,16 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="dashboard-shell">
-    <aside class="sidebar">
-        <h4 class="fw-bold mb-4">Patient Portal</h4>
-        <nav class="nav flex-column">
-            <a class="nav-link" href="{% url 'patient_dashboard' %}"><i class="bi bi-columns-gap me-2"></i>Overview</a>
-            <a class="nav-link active" href="{% url 'book_appointment' %}"><i class="bi bi-calendar-plus me-2"></i>Book</a>
-            <a class="nav-link" href="{% url 'patient_history' %}"><i class="bi bi-clock-history me-2"></i>History</a>
-            <a class="nav-link" href="{% url 'patient_profile' %}"><i class="bi bi-person-lines-fill me-2"></i>Profile</a>
-            <a class="nav-link" href="{% url 'notifications' %}"><i class="bi bi-bell me-2"></i>Notifications</a>
-        </nav>
-    </aside>
+    {% include 'dashboard/_sidebar.html' %}
     <div class="main-panel">
         <div class="card-soft p-4 p-md-5">
             <div class="d-flex justify-content-between align-items-start mb-4">
@@ -20,41 +11,128 @@
                 </div>
                 <div class="pill pill-success">Secure</div>
             </div>
-            <form method="post">
+            {% if patients %}
+            <div class="row g-3">
+                <div class="col-12">
+                    <form id="patient-search-form" method="get" class="d-flex gap-2 mb-3">
+                        {% if selected_dentist %}
+                            <input type="hidden" name="dentist" value="{{ selected_dentist.pk }}">
+                        {% endif %}
+                        {% if selected_service %}
+                            <input type="hidden" name="service" value="{{ selected_service.pk }}">
+                        {% endif %}
+                        {% if selected_date %}
+                            <input type="hidden" name="appointment_date" value="{{ selected_date }}">
+                        {% endif %}
+                        <input class="form-control" type="search" name="patient_search" placeholder="Search patient by name, email or ID" value="{{ patient_search }}">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+            <form id="booking-form" method="post">
                 {% csrf_token %}
                 <div class="row g-3">
+                    {% if patients %}
+                    <div class="col-12">
+                        <label class="form-label">Patient</label>
+                        <select class="form-select" name="patient" required>
+                            <option value="">Select a patient</option>
+                            {% for patient in patients %}
+                                <option value="{{ patient.pk }}" {% if patient.pk|stringformat:"s" == selected_patient_pk|stringformat:"s" %}selected{% endif %}>
+                                    {{ patient.patient_id }} - {{ patient.user.get_full_name|default:patient.user.username }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
                     <div class="col-md-6">
                         <label class="form-label">Dentist</label>
                         <select class="form-select" name="dentist" required>
+                            <option value="" {% if not selected_dentist %}selected{% endif %}>Select a dentist</option>
                             {% for dentist in dentists %}
-                                <option value="{{ dentist.pk }}">{{ dentist }}</option>
+                                <option value="{{ dentist.pk }}" {% if selected_dentist and dentist.pk == selected_dentist.pk %}selected{% endif %}>{{ dentist }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Service</label>
                         <select class="form-select" name="service" required>
+                            <option value="" {% if not selected_service %}selected{% endif %}>Select a service</option>
                             {% for service in services %}
-                                <option value="{{ service.pk }}">{{ service.name }}</option>
+                                <option value="{{ service.pk }}" {% if selected_service and service.pk == selected_service.pk %}selected{% endif %}>{{ service.name }} ({{ service.duration }} mins)</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Date</label>
-                        <input class="form-control" type="date" name="appointment_date" required>
+                        <input class="form-control" type="date" name="appointment_date" value="{{ selected_date }}" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Time</label>
-                        <input class="form-control" type="time" name="start_time" required>
+                        {% if selected_dentist and selected_service and selected_date %}
+                            {% if available_slots %}
+                                <select class="form-select" name="start_time" required>
+                                    <option value="">Select an available time</option>
+                                    {% for slot in available_slots %}
+                                        <option value="{{ slot }}" {% if slot == selected_start_time %}selected{% endif %}>{{ slot }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% else %}
+                                <div class="form-text text-danger">No available slots for the chosen dentist and date. Please choose another day.</div>
+                                <input class="form-control" type="time" name="start_time" disabled>
+                            {% endif %}
+                        {% else %}
+                            <div class="form-text text-muted">Select dentist, service, and date first to choose an available slot.</div>
+                            <input class="form-control" type="time" name="start_time" disabled>
+                        {% endif %}
                     </div>
                     <div class="col-12">
                         <label class="form-label">Reason</label>
                         <textarea class="form-control" name="reason" rows="4" required></textarea>
                     </div>
+                    {% if unavailable_slots %}
+                    <div class="col-12">
+                        <div class="alert alert-warning mb-0">
+                            The following time slots are already booked: {{ unavailable_slots|join:', ' }}.
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
                 <button class="btn btn-primary mt-4" type="submit">Confirm Booking</button>
             </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('booking-form');
+        if (!form) return;
+        const params = new URLSearchParams(window.location.search);
+        const refreshFields = ['dentist', 'service', 'appointment_date'];
+
+        refreshFields.forEach(function (fieldName) {
+            const field = form.querySelector(`[name="${fieldName}"]`);
+            if (!field) return;
+            field.addEventListener('change', function () {
+                const query = new URLSearchParams();
+                refreshFields.forEach(function (name) {
+                    const element = form.querySelector(`[name="${name}"]`);
+                    if (element && element.value) {
+                        query.set(name, element.value);
+                    }
+                });
+                const patientField = form.querySelector('[name="patient"]');
+                if (patientField && patientField.value) {
+                    query.set('patient', patientField.value);
+                }
+                window.location = `${window.location.pathname}?${query.toString()}`;
+            });
+        });
+    });
+</script>
 {% endblock %}

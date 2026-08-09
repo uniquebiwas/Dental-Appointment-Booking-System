@@ -14,6 +14,17 @@ class RegistrationForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'phone', 'password1', 'password2', 'account_type')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            widget = field.widget
+            if isinstance(widget, forms.RadioSelect):
+                widget.attrs.setdefault('class', 'form-check-input')
+            elif isinstance(widget, forms.Select):
+                widget.attrs.setdefault('class', 'form-select')
+            else:
+                widget.attrs.setdefault('class', 'form-control')
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']

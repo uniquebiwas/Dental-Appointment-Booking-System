@@ -12,6 +12,15 @@ class UserCreateForm(forms.ModelForm):
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'phone', 'role', 'password')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            widget = field.widget
+            if isinstance(widget, forms.Select):
+                widget.attrs.setdefault('class', 'form-select')
+            else:
+                widget.attrs.setdefault('class', 'form-control')
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
@@ -31,8 +40,26 @@ class UserEditForm(forms.ModelForm):
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'phone', 'role', 'is_active', 'account_status')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            widget = field.widget
+            if isinstance(widget, forms.Select):
+                widget.attrs.setdefault('class', 'form-select')
+            else:
+                widget.attrs.setdefault('class', 'form-control')
+
 
 class DentistEditForm(forms.ModelForm):
     class Meta:
         model = Dentist
         fields = ('specialization', 'license_number', 'phone', 'biography', 'years_of_experience', 'active')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            widget = field.widget
+            if isinstance(widget, forms.Select):
+                widget.attrs.setdefault('class', 'form-select')
+            else:
+                widget.attrs.setdefault('class', 'form-control')

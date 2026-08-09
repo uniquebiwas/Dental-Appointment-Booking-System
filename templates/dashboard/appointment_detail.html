@@ -1,22 +1,42 @@
 {% extends 'base.html' %}
+{% load status_tags %}
 {% block content %}
 <div class="dashboard-shell">
     {% include 'dashboard/_sidebar.html' %}
     <div class="main-panel">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h3 class="mb-3">Appointment Details</h3>
+        <div class="card-soft p-4">
+                <h3 class="fw-bold mb-3">Appointment Details</h3>
                 <p><strong>ID:</strong> {{ appointment.appointment_id }}</p>
                 <p><strong>Patient:</strong> {{ appointment.patient }}</p>
                 <p><strong>Dentist:</strong> {{ appointment.dentist }}</p>
                 <p><strong>Service:</strong> {{ appointment.service }}</p>
                 <p><strong>Date:</strong> {{ appointment.appointment_date }}</p>
                 <p><strong>Time:</strong> {{ appointment.start_time }} - {{ appointment.end_time }}</p>
-                <p><strong>Status:</strong> {{ appointment.status }}</p>
+                <p><strong>Status:</strong> <span class="pill {{ appointment.status|status_badge_class }}">{{ appointment.status }}</span></p>
+                {% if user.is_dentist_approved and user == appointment.dentist.user %}
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Appointment Notes</label>
+                        <textarea class="form-control" name="notes" rows="4">{{ appointment.notes }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Update Status</label>
+                        <select class="form-select" name="status">
+                            {% for status_choice, status_label in appointment.STATUS_CHOICES %}
+                                <option value="{{ status_choice }}" {% if appointment.status == status_choice %}selected{% endif %}>{{ status_choice }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Save Feedback</button>
+                </form>
+                {% endif %}
+                {% if can_cancel_reschedule %}
                 <div class="mt-3">
                     <a class="btn btn-outline-danger" href="{% url 'cancel_appointment' appointment.pk %}">Cancel</a>
                     <a class="btn btn-outline-primary ms-2" href="{% url 'reschedule_appointment' appointment.pk %}">Reschedule</a>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
