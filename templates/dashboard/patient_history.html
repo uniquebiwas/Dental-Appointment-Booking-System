@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-shell">
+    <aside class="sidebar">
+        <h4 class="fw-bold mb-4">Patient Records</h4>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{% url 'patient_dashboard' %}"><i class="bi bi-columns-gap me-2"></i>Overview</a>
+            <a class="nav-link" href="{% url 'book_appointment' %}"><i class="bi bi-calendar-plus me-2"></i>Book</a>
+            <a class="nav-link active" href="{% url 'appointment_history' %}"><i class="bi bi-clock-history me-2"></i>History</a>
+            <a class="nav-link" href="{% url 'patient_profile' %}"><i class="bi bi-person-lines-fill me-2"></i>Profile</a>
+            <a class="nav-link" href="{% url 'notifications' %}"><i class="bi bi-bell me-2"></i>Notifications</a>
+        </nav>
+    </aside>
+    <div class="main-panel">
+        <div class="card shadow-sm">
+    <div class="card-body">
+        <h3 class="mb-3">Appointment History</h3>
+        <table class="table table-striped">
+            <thead><tr><th>Appointment</th><th>Date</th><th>Status</th><th>Dentist</th></tr></thead>
+            <tbody>
+                {% for appointment in appointments %}
+                <tr>
+                    <td><a href="{% url 'appointment_detail' appointment.pk %}">{{ appointment.appointment_id }}</a></td>
+                    <td>{{ appointment.appointment_date }}</td>
+                    <td>{{ appointment.status }}</td>
+                    <td>{{ appointment.dentist }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-muted">No appointments yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

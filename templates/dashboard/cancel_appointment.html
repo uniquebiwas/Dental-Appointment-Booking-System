@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h3 class="mb-3">Cancel Appointment</h3>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Reason</label>
+                <textarea class="form-control" name="reason"></textarea>
+            </div>
+            <button class="btn btn-danger" type="submit">Cancel Appointment</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

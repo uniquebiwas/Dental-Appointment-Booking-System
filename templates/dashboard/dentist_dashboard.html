@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-shell">
+    <aside class="sidebar">
+        <h4 class="fw-bold mb-4">Dentist Portal</h4>
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="{% url 'dentist_dashboard' %}"><i class="bi bi-columns-gap me-2"></i>Overview</a>
+            <a class="nav-link" href="{% url 'dentist_profile' %}"><i class="bi bi-person-badge me-2"></i>Profile</a>
+            <a class="nav-link" href="{% url 'notifications' %}"><i class="bi bi-bell me-2"></i>Notifications</a>
+        </nav>
+    </aside>
+    <div class="main-panel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Dr. {{ dentist.user.get_full_name|default:dentist.user.username }}</h2>
+                <p class="text-muted mb-0">A focused view of your day, upcoming visits and completed cases.</p>
+            </div>
+            <div class="pill pill-success">Ready</div>
+        </div>
+        <div class="row g-4 mb-4">
+            <div class="col-md-6"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Today</h6><h3 class="fw-bold">{{ today|length }}</h3></div><div class="metric-icon"><i class="bi bi-calendar2-event"></i></div></div></div></div></div>
+            <div class="col-md-6"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Completed</h6><h3 class="fw-bold">{{ completed }}</h3></div><div class="metric-icon"><i class="bi bi-check2-circle"></i></div></div></div></div></div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card-soft p-4">
+                    <h5 class="mb-3">Today’s patients</h5>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead><tr><th>Patient</th><th>Time</th><th>Service</th><th>Status</th></tr></thead>
+                            <tbody>
+                                {% for appointment in today %}
+                                <tr><td>{{ appointment.patient }}</td><td>{{ appointment.start_time }}</td><td>{{ appointment.service }}</td><td><span class="pill pill-warning">{{ appointment.status }}</span></td></tr>
+                                {% empty %}<tr><td colspan="4"><div class="empty-state">No patients scheduled today.</div></td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card-soft p-4">
+                    <h5 class="mb-3">Upcoming cases</h5>
+                    <ul class="list-unstyled mb-0">
+                        {% for appointment in upcoming %}
+                        <li class="py-2 border-bottom"><strong>{{ appointment.appointment_date }}</strong><div class="text-muted small">{{ appointment.patient }} • {{ appointment.service }}</div></li>
+                        {% empty %}<li class="empty-state">No upcoming visits.</li>{% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

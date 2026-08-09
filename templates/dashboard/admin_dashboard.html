@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-shell">
+    <aside class="sidebar">
+        <h4 class="fw-bold mb-4">Admin Console</h4>
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Overview</a>
+            <a class="nav-link" href="{% url 'admin_users' %}"><i class="bi bi-people me-2"></i>Users</a>
+            <a class="nav-link" href="{% url 'reports' %}"><i class="bi bi-graph-up me-2"></i>Reports</a>
+            <a class="nav-link" href="{% url 'reminders' %}"><i class="bi bi-bell me-2"></i>Reminders</a>
+            <a class="nav-link" href="{% url 'notifications' %}"><i class="bi bi-chat-square-text me-2"></i>Notifications</a>
+            <a class="nav-link" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+        </nav>
+    </aside>
+    <div class="main-panel">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="fw-bold mb-1">Good morning, Admin</h2>
+                <p class="text-muted mb-0">Here’s what’s happening at your clinic today.</p>
+            </div>
+            <div class="pill pill-success">Live clinic data</div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Total Patients</h6><h3 class="fw-bold">{{ patient_count }}</h3></div><div class="metric-icon"><i class="bi bi-person-hearts"></i></div></div></div></div></div>
+            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Total Dentists</h6><h3 class="fw-bold">{{ dentist_count }}</h3></div><div class="metric-icon"><i class="bi bi-people"></i></div></div></div></div></div>
+            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Today’s Appointments</h6><h3 class="fw-bold">{{ todays_appointments|length }}</h3></div><div class="metric-icon"><i class="bi bi-calendar2-week"></i></div></div></div></div></div>
+        </div>
+        <div class="row g-4 mb-4">
+            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Pending Appointments</h6><h3 class="fw-bold">{{ pending_appointments }}</h3></div><div class="metric-icon"><i class="bi bi-hourglass-split"></i></div></div></div></div></div>
+            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">Completed</h6><h3 class="fw-bold">{{ completed_count }}</h3></div><div class="metric-icon"><i class="bi bi-check2-circle"></i></div></div></div></div></div>
+            <div class="col-md-4"><div class="card-soft metric-card p-4"><div class="d-flex justify-content-between"><div><h6 class="text-muted">No-Shows</h6><h3 class="fw-bold">{{ no_show_count }}</h3></div><div class="metric-icon"><i class="bi bi-slash-circle"></i></div></div></div></div></div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8">
+                <div class="card-soft p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="mb-0">Today’s Schedule</h5><span class="pill pill-warning">Live list</span></div>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead><tr><th>Patient</th><th>Dentist</th><th>Time</th><th>Status</th></tr></thead>
+                            <tbody>
+                                {% for appointment in todays_appointments %}
+                                <tr><td>{{ appointment.patient }}</td><td>{{ appointment.dentist }}</td><td>{{ appointment.start_time }}</td><td><span class="pill pill-warning">{{ appointment.status }}</span></td></tr>
+                                {% empty %}<tr><td colspan="4"><div class="empty-state">No appointments scheduled for today.</div></td></tr>{% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card-soft p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="mb-0">Pending Dentist Approvals</h5>{% if pending_dentists %}<span class="pill pill-danger">{{ pending_dentists|length }} pending</span>{% endif %}</div>
+                    {% if pending_dentists %}
+                    <ul class="list-unstyled mb-0">
+                        {% for user in pending_dentists %}
+                        <li class="py-2 border-bottom"><strong>{{ user.get_full_name|default:user.username }}</strong><div class="text-muted small">{{ user.email }}</div></li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="empty-state">No pending dentist applications.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card-soft p-4">
+                    <h5 class="mb-3">Recent Activity</h5>
+                    <ul class="list-unstyled mb-0">
+                        {% for item in activity %}
+                        <li class="py-2 border-bottom"><strong>{{ item.appointment }}</strong><div class="text-muted small">{{ item.previous_status }} → {{ item.new_status }} • {{ item.timestamp }}</div></li>
+                        {% empty %}<li class="empty-state">No recent activity.</li>{% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card-soft p-4">
+                    <h5 class="mb-3">Clinic Summary</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex justify-content-between py-2 border-bottom"><span>Cancelled</span><strong>{{ cancelled_count }}</strong></li>
+                        <li class="d-flex justify-content-between py-2 border-bottom"><span>Upcoming</span><strong>{{ upcoming_count }}</strong></li>
+                        <li class="d-flex justify-content-between py-2"><span>No-shows</span><strong>{{ no_show_count }}</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

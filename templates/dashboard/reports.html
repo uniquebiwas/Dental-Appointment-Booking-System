@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-shell">
+    <aside class="sidebar">
+        <h4 class="fw-bold mb-4">Reports</h4>
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="{% url 'reports' %}"><i class="bi bi-graph-up me-2"></i>Reports</a>
+            <a class="nav-link" href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Admin Overview</a>
+            <a class="nav-link" href="{% url 'home' %}"><i class="bi bi-house-door me-2"></i>Home</a>
+            <a class="nav-link" data-swal-confirm href="{% url 'logout' %}" data-title="Logout" data-text="Are you sure you want to log out?" data-confirm-button-text="Logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+        </nav>
+    </aside>
+    <div class="main-panel">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h3 class="fw-bold mb-2">Reports</h3>
+            <p class="text-muted mb-0">A concise view of clinic activity and appointment distribution.</p>
+        </div>
+        <div class="pill pill-success">Updated</div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="card-soft p-3"><h6 class="text-muted">Patients</h6><h3 class="fw-bold">{{ patient_count }}</h3></div></div>
+        <div class="col-md-4"><div class="card-soft p-3"><h6 class="text-muted">Services</h6><h3 class="fw-bold">{{ service_count }}</h3></div></div>
+        <div class="col-md-4"><div class="card-soft p-3"><h6 class="text-muted">Appointments</h6><h3 class="fw-bold">{{ appointment_count }}</h3></div></div>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead><tr><th>Appointment</th><th>Patient</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for appointment in appointments %}
+                <tr><td>{{ appointment.appointment_id }}</td><td>{{ appointment.patient }}</td><td><span class="pill pill-warning">{{ appointment.status }}</span></td></tr>
+                {% empty %}<tr><td colspan="3"><div class="empty-state">No reports available.</div></td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
