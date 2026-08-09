@@ -1,7 +1,17 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
+<div class="dashboard-shell">
+    <aside class="sidebar">
+        <h4 class="fw-bold mb-4">Patient Portal</h4>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{% url 'patient_dashboard' %}"><i class="bi bi-columns-gap me-2"></i>Overview</a>
+            <a class="nav-link active" href="{% url 'book_appointment' %}"><i class="bi bi-calendar-plus me-2"></i>Book</a>
+            <a class="nav-link" href="{% url 'patient_history' %}"><i class="bi bi-clock-history me-2"></i>History</a>
+            <a class="nav-link" href="{% url 'patient_profile' %}"><i class="bi bi-person-lines-fill me-2"></i>Profile</a>
+            <a class="nav-link" href="{% url 'notifications' %}"><i class="bi bi-bell me-2"></i>Notifications</a>
+        </nav>
+    </aside>
+    <div class="main-panel">
         <div class="card-soft p-4 p-md-5">
             <div class="d-flex justify-content-between align-items-start mb-4">
                 <div>
@@ -16,13 +26,17 @@
                     <div class="col-md-6">
                         <label class="form-label">Dentist</label>
                         <select class="form-select" name="dentist" required>
-                            {% for dentist in dentists %}<option value="{{ dentist.pk }}">{{ dentist }}</option>{% endfor %}
+                            {% for dentist in dentists %}
+                                <option value="{{ dentist.pk }}">{{ dentist }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Service</label>
                         <select class="form-select" name="service" required>
-                            {% for service in services %}<option value="{{ service.pk }}">{{ service.name }}</option>{% endfor %}
+                            {% for service in services %}
+                                <option value="{{ service.pk }}">{{ service.name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-6">

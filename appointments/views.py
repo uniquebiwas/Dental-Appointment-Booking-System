@@ -63,7 +63,10 @@ def appointment_detail(request, pk):
 
 @login_required
 def appointment_history(request):
-    appointments = Appointment.objects.filter(patient__user=request.user).order_by('-appointment_date', '-start_time')
+    if request.user.is_admin() or request.user.is_staff_role():
+        appointments = Appointment.objects.all().order_by('-appointment_date', '-start_time')
+    else:
+        appointments = Appointment.objects.filter(patient__user=request.user).order_by('-appointment_date', '-start_time')
     return render(request, 'dashboard/appointment_history.html', {'appointments': appointments})
 
 

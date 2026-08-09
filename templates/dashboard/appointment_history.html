@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="dashboard-shell">
+    <aside class="sidebar">
+        <h4 class="fw-bold mb-4">Reception Team</h4>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{% url 'staff_dashboard' %}"><i class="bi bi-columns-gap me-2"></i>Overview</a>
+            <a class="nav-link" href="{% url 'book_appointment' %}"><i class="bi bi-calendar-plus me-2"></i>New Booking</a>
+            <a class="nav-link active" href="{% url 'appointment_history' %}"><i class="bi bi-list-ul me-2"></i>Appointments</a>
+            <a class="nav-link" href="{% url 'notifications' %}"><i class="bi bi-bell me-2"></i>Notifications</a>
+        </nav>
+    </aside>
+    <div class="main-panel">
+        <div class="card-soft p-4">
+            <h3 class="mb-3">Appointment History</h3>
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Appointment ID</th>
+                            <th>Patient</th>
+                            <th>Dentist</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr>
+                            <td><a href="{% url 'appointment_detail' appointment.pk %}">{{ appointment.appointment_id }}</a></td>
+                            <td>{{ appointment.patient }}</td>
+                            <td>{{ appointment.dentist }}</td>
+                            <td>{{ appointment.appointment_date }}</td>
+                            <td>{{ appointment.start_time }}</td>
+                            <td><span class="pill pill-warning">{{ appointment.status }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-muted">No appointments found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
