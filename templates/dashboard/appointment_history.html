@@ -4,16 +4,16 @@
 <div class="dashboard-shell">
     {% include 'dashboard/_sidebar.html' %}
     <div class="main-panel">
-        <div class="card-soft p-4">
-            <h3 class="mb-3">Appointment History</h3>
-            <div class="d-flex mb-3 gap-2">
-                <form method="get" class="d-flex w-100">
-                    <input type="search" name="q" class="form-control" placeholder="Search appointments by ID, patient, dentist, service or status" value="{{ q }}">
-                    <button class="btn btn-primary ms-2" type="submit">Search</button>
+        <div class="card-soft p-3 p-md-4">
+            <h3 class="fw-bold mb-3">Appointment History</h3>
+            <div class="d-flex mb-3">
+                <form method="get" class="d-flex flex-column flex-sm-row w-100 gap-2">
+                    <input type="search" name="q" class="form-control" placeholder="Search by ID, patient, dentist, service or status..." value="{{ q }}">
+                    <button class="btn btn-primary min-height-44" type="submit">Search</button>
                 </form>
             </div>
             <div class="table-responsive">
-                <table class="table align-middle">
+                <table class="table align-middle text-nowrap">
                     <thead>
                         <tr>
                             <th>Appointment ID</th>
@@ -28,44 +28,49 @@
                     <tbody>
                         {% for appointment in appointments %}
                         <tr>
-                            <td><a href="{% url 'appointment_detail' appointment.pk %}">{{ appointment.appointment_id }}</a></td>
+                            <td><a href="{% url 'appointment_detail' appointment.pk %}" class="fw-bold text-primary">{{ appointment.appointment_id }}</a></td>
                             <td>{{ appointment.patient }}</td>
                             <td>{{ appointment.dentist }}</td>
-                            <td>{{ appointment.appointment_date }}</td>
-                            <td>{{ appointment.start_time }}</td>
+                            <td>{{ appointment.appointment_date|date:"M d, Y" }}</td>
+                            <td>{{ appointment.start_time|time:"H:i" }}</td>
                             <td><span class="pill {{ appointment.status|status_badge_class }}">{{ appointment.status }}</span></td>
                             <td>
-                                                                {{ appointment.notes|default_if_none:""|truncatechars:80 }}
-                                                                {% if appointment.notes %}
-                                                                <div><button class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#apptModal{{ appointment.pk }}">View comment</button></div>
-                                                                {% endif %}
-                                                        </td>
+                                {{ appointment.notes|default_if_none:""|truncatechars:80 }}
+                                {% if appointment.notes %}
+                                <div><button class="btn btn-link btn-sm p-0" data-bs-toggle="modal" data-bs-target="#apptModal{{ appointment.pk }}">View comment</button></div>
+                                {% endif %}
+                            </td>
                         </tr>
-                                                <!-- Modal for full comment -->
-                                                {% if appointment.notes %}
-                                                <div class="modal fade" id="apptModal{{ appointment.pk }}" tabindex="-1" aria-hidden="true">
-                                                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title">Appointment {{ appointment.appointment_id }} — Comment</h5>
-                                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <p><strong>Patient:</strong> {{ appointment.patient }}</p>
-                                                                <p><strong>Dentist:</strong> {{ appointment.dentist }}</p>
-                                                                <p><strong>Date:</strong> {{ appointment.appointment_date }}</p>
-                                                                <p><strong>Time:</strong> {{ appointment.start_time }} - {{ appointment.end_time }}</p>
-                                                                <hr>
-                                                                <h6>Full comment</h6>
-                                                                <p class="text-muted">{{ appointment.notes }}</p>
-                                                            </div>
-                                                            <div class="modal-footer"><a class="btn btn-outline-secondary" href="{% url 'appointment_detail' appointment.pk %}">Open details</a><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {% endif %}
+
+                        <!-- Modal for full comment -->
+                        {% if appointment.notes %}
+                        <div class="modal fade" id="apptModal{{ appointment.pk }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Appointment {{ appointment.appointment_id }} — Comment</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Patient:</strong> {{ appointment.patient }}</p>
+                                        <p><strong>Dentist:</strong> {{ appointment.dentist }}</p>
+                                        <p><strong>Date:</strong> {{ appointment.appointment_date }}</p>
+                                        <p><strong>Time:</strong> {{ appointment.start_time }} - {{ appointment.end_time }}</p>
+                                        <hr>
+                                        <h6>Full comment</h6>
+                                        <p class="text-muted">{{ appointment.notes }}</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <a class="btn btn-outline-secondary" href="{% url 'appointment_detail' appointment.pk %}">Open details</a>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
                         {% empty %}
-                        <tr><td colspan="6" class="text-muted">No appointments found.</td></tr>
+                        <tr><td colspan="7"><div class="empty-state py-4 text-center">No appointments found.</div></td></tr>
                         {% endfor %}
                     </tbody>
                 </table>

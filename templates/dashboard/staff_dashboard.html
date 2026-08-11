@@ -4,56 +4,66 @@
 <div class="dashboard-shell">
     {% include 'dashboard/_sidebar.html' %}
     <div class="main-panel">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
             <div>
                 <h2 class="fw-bold mb-1">Reception Dashboard</h2>
                 <p class="text-muted mb-0">Coordinate arrivals, confirmations and day-of operations.</p>
             </div>
-            <a class="btn btn-primary" href="{% url 'book_appointment' %}"><i class="bi bi-plus-circle me-2"></i>New Booking</a>
+            <a class="btn btn-primary w-100 w-sm-auto" href="{% url 'book_appointment' %}">
+                <i class="bi bi-plus-circle me-2"></i>New Booking
+            </a>
         </div>
-        <div class="row g-4 mb-4">
-            <div class="col-md-3">
-                <div class="card-soft metric-card p-4">
-                    <div class="d-flex justify-content-between">
-                        <div><h6 class="text-muted">Confirmed</h6><h3 class="fw-bold">{{ confirmed }}</h3></div>
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card-soft metric-card p-3 p-md-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><h6 class="text-muted small mb-1">Confirmed</h6><h3 class="fw-bold mb-0">{{ confirmed }}</h3></div>
                         <div class="metric-icon"><i class="bi bi-check2-circle"></i></div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card-soft metric-card p-4">
-                    <div class="d-flex justify-content-between">
-                        <div><h6 class="text-muted">Pending</h6><h3 class="fw-bold">{{ pending }}</h3></div>
+            <div class="col-6 col-md-3">
+                <div class="card-soft metric-card p-3 p-md-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><h6 class="text-muted small mb-1">Pending</h6><h3 class="fw-bold mb-0">{{ pending }}</h3></div>
                         <div class="metric-icon"><i class="bi bi-hourglass-split"></i></div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card-soft metric-card p-4">
-                    <div class="d-flex justify-content-between">
-                        <div><h6 class="text-muted">Cancelled</h6><h3 class="fw-bold">{{ cancelled }}</h3></div>
+            <div class="col-6 col-md-3">
+                <div class="card-soft metric-card p-3 p-md-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><h6 class="text-muted small mb-1">Cancelled</h6><h3 class="fw-bold mb-0">{{ cancelled }}</h3></div>
                         <div class="metric-icon"><i class="bi bi-x-circle"></i></div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card-soft metric-card p-4">
-                    <div class="d-flex justify-content-between">
-                        <div><h6 class="text-muted">No-shows</h6><h3 class="fw-bold">{{ no_shows }}</h3></div>
+            <div class="col-6 col-md-3">
+                <div class="card-soft metric-card p-3 p-md-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><h6 class="text-muted small mb-1">No-shows</h6><h3 class="fw-bold mb-0">{{ no_shows }}</h3></div>
                         <div class="metric-icon"><i class="bi bi-slash-circle"></i></div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="card-soft p-4">
-            <h5 class="mb-3">Today’s appointments</h5>
+        <div class="card-soft p-3 p-md-4">
+            <h5 class="fw-bold mb-3">Today’s Appointments</h5>
             <div class="table-responsive">
-                <table class="table align-middle">
-                    <thead><tr><th>Patient</th><th>Dentist</th><th>Time</th><th>Status</th></tr></thead>
+                <table class="table align-middle text-nowrap">
+                    <thead><tr><th>Patient</th><th>Dentist</th><th>Time</th><th>Status</th><th>Action</th></tr></thead>
                     <tbody>
                         {% for appointment in today %}
-                        <tr><td>{{ appointment.patient }}</td><td>{{ appointment.dentist }}</td><td>{{ appointment.start_time }}</td><td><span class="pill {{ appointment.status|status_badge_class }}">{{ appointment.status }}</span></td></tr>
-                        {% empty %}<tr><td colspan="4"><div class="empty-state">No appointments scheduled for today.</div></td></tr>{% endfor %}
+                        <tr>
+                            <td><a href="{% url 'appointment_detail' appointment.pk %}" class="fw-semibold">{{ appointment.patient }}</a></td>
+                            <td>{{ appointment.dentist }}</td>
+                            <td>{{ appointment.start_time|time:"H:i" }}</td>
+                            <td><span class="pill {{ appointment.status|status_badge_class }}">{{ appointment.status }}</span></td>
+                            <td><a href="{% url 'appointment_detail' appointment.pk %}" class="btn btn-sm btn-outline-primary">Details</a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5"><div class="empty-state py-4 text-center">No appointments scheduled for today.</div></td></tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>

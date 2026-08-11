@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="hero-card p-5 mb-5">
+<div class="hero-card p-4 p-md-5 mb-5">
     <div class="row align-items-center g-4">
         <div class="col-lg-7">
             <div class="pill pill-success mb-3"><i class="bi bi-shield-check"></i> Trusted by modern dental clinics</div>
-            <h1 class="display-5 fw-bold mb-3">Your smile deserves a seamless care experience.</h1>
+            <h1 class="fw-bold mb-3">Your smile deserves a seamless care experience.</h1>
             <p class="lead mb-4">Book visits, coordinate treatment plans, and keep every patient interaction beautifully organized.</p>
-            <div class="d-flex flex-wrap gap-2">
-                <a class="btn btn-light text-primary fw-semibold" href="{% url 'book_appointment' %}">Book Appointment</a>
+            <div class="d-flex flex-column flex-sm-row gap-2">
+                <a class="btn btn-light text-primary fw-semibold min-height-44" href="{% url 'book_appointment' %}">Book Appointment</a>
                 {% if not user.is_authenticated %}
-                <a class="btn btn-outline-light" href="{% url 'login' %}">Patient Login</a>
+                <a class="btn btn-outline-light min-height-44" href="{% url 'login' %}">Patient Login</a>
                 {% endif %}
             </div>
         </div>
@@ -19,9 +19,9 @@
 
 <section class="mb-5">
     <div class="row g-4">
-        <div class="col-md-4"><div class="card-soft p-4 h-100"><div class="metric-icon mb-3"><i class="bi bi-calendar2-check fs-4"></i></div><h5>Smart Scheduling</h5><p class="text-muted mb-0">Effortless booking, live availability and intelligent conflict avoidance.</p></div></div>
-        <div class="col-md-4"><div class="card-soft p-4 h-100"><div class="metric-icon mb-3"><i class="bi bi-bell fs-4"></i></div><h5>Automated Reminders</h5><p class="text-muted mb-0">Keep patients informed with polished reminder workflows and follow-up prompts.</p></div></div>
-        <div class="col-md-4"><div class="card-soft p-4 h-100"><div class="metric-icon mb-3"><i class="bi bi-clipboard2-pulse fs-4"></i></div><h5>Clinical Insights</h5><p class="text-muted mb-0">Make every decision with clear reporting, trends and operational visibility.</p></div></div>
+        <div class="col-12 col-md-4"><div class="card-soft p-4 h-100"><div class="metric-icon mb-3"><i class="bi bi-calendar2-check fs-4"></i></div><h5>Smart Scheduling</h5><p class="text-muted mb-0">Effortless booking, live availability and intelligent conflict avoidance.</p></div></div>
+        <div class="col-12 col-md-4"><div class="card-soft p-4 h-100"><div class="metric-icon mb-3"><i class="bi bi-bell fs-4"></i></div><h5>Automated Reminders</h5><p class="text-muted mb-0">Keep patients informed with polished email notifications and reminder logs.</p></div></div>
+        <div class="col-12 col-md-4"><div class="card-soft p-4 h-100"><div class="metric-icon mb-3"><i class="bi bi-clipboard2-pulse fs-4"></i></div><h5>Clinical Insights</h5><p class="text-muted mb-0">Make every decision with clear reporting, trends and operational visibility.</p></div></div>
     </div>
 </section>
 
@@ -29,7 +29,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="section-title">Featured Services</h3><p class="text-muted mb-0">High-quality comfort-focused dental care for every stage of treatment.</p></div></div>
     <div class="row g-4">
         {% for service in services %}
-        <div class="col-md-6 col-lg-3"><div class="card service-card h-100 border-0 shadow-sm"><div class="card-body"><div class="metric-icon mb-3"><i class="bi bi-heart-pulse"></i></div><h5>{{ service.name }}</h5><p class="text-muted small mb-3">{{ service.description }}</p><div class="d-flex justify-content-between align-items-center text-primary fw-semibold"><span>{{ service.duration }} mins</span><span>${{ service.price }}</span></div></div></div></div>
+        <div class="col-12 col-sm-6 col-lg-3"><div class="card service-card h-100 border-0 shadow-sm"><div class="card-body p-4"><div class="metric-icon mb-3"><i class="bi bi-heart-pulse"></i></div><h5>{{ service.name }}</h5><p class="text-muted small mb-3">{{ service.description }}</p><div class="d-flex justify-content-between align-items-center text-primary fw-semibold"><span>{{ service.duration }} mins</span><span>${{ service.price }}</span></div></div></div></div>
         {% endfor %}
     </div>
 </section>
@@ -38,23 +38,23 @@
     <div class="d-flex justify-content-between align-items-center mb-3"><div><h3 class="section-title">Meet Our Dental Team</h3><p class="text-muted mb-0">Experienced professionals delivering modern patient-first care.</p></div></div>
     <div class="row g-4">
         {% for dentist in dentists %}
-        <div class="col-md-6 col-lg-4"><div class="card-soft p-4 h-100"><div class="d-flex align-items-center gap-3 mb-3"><div class="avatar-circle">{{ dentist.user.first_name|first|default:'D' }}</div><div><h5 class="mb-1">Dr. {{ dentist.user.get_full_name|default:dentist.user.username }}</h5><p class="text-muted mb-0">{{ dentist.specialization }}</p></div></div><p class="text-muted small">{{ dentist.biography|truncatechars:95 }}</p><div class="pill pill-success">{{ dentist.years_of_experience }} years experience</div></div></div>
+        <div class="col-12 col-sm-6 col-lg-4"><div class="card-soft p-4 h-100"><div class="d-flex align-items-center gap-3 mb-3"><div class="avatar-circle">{{ dentist.user.first_name|first|default:'D' }}</div><div><h5 class="mb-1">Dr. {{ dentist.user.get_full_name|default:dentist.user.username }}</h5><p class="text-muted mb-0 small">{{ dentist.specialization }}</p></div></div><p class="text-muted small mb-3">{{ dentist.biography|truncatechars:95 }}</p><div class="pill pill-success">{{ dentist.years_of_experience }} years experience</div></div></div>
         {% endfor %}
     </div>
 </section>
 
 <section class="mb-5">
     <div class="row g-4 align-items-center">
-        <div class="col-lg-6"><h3 class="section-title">Why choose SmileCare</h3><div class="d-flex flex-column gap-3">{% for step in '123' %}<div class="card-soft p-3 d-flex align-items-center gap-3"><div class="step-pill">{{ forloop.counter }}</div><div><strong>{% if forloop.counter == 1 %}Care that feels personal{% elif forloop.counter == 2 %}Clear communication{% else %}A secure modern platform{% endif %}</strong><div class="text-muted small">{% if forloop.counter == 1 %}Every visit is coordinated around the patient experience.{% elif forloop.counter == 2 %}Patients receive reminders and updates at every stage.{% else %}Admins, staff and clinicians all work from the same view.{% endif %}</div></div></div>{% endfor %}</div></div>
-        <div class="col-lg-6"><div class="card-soft p-4"><h5 class="mb-3">Patient testimonials</h5><div class="d-flex flex-column gap-3">{% for review in testimonials %}<div class="border rounded-3 p-3"><div class="text-warning mb-2">{% for _ in '12345' %}{% if forloop.counter <= review.rating %}<i class="bi bi-star-fill"></i>{% else %}<i class="bi bi-star" style="opacity:.4"></i>{% endif %}{% endfor %}</div><p class="mb-2">“{{ review.quote }}”</p><strong>— {{ review.author }}</strong></div>{% empty %}<div class="border rounded-3 p-3"><p class="mb-0 text-muted">No testimonials available yet.</p></div>{% endfor %}</div></div></div>
+        <div class="col-12 col-lg-6"><h3 class="section-title mb-3">Why choose SmileCare</h3><div class="d-flex flex-column gap-3">{% for step in '123' %}<div class="card-soft p-3 d-flex align-items-center gap-3"><div class="step-pill">{{ forloop.counter }}</div><div><strong>{% if forloop.counter == 1 %}Care that feels personal{% elif forloop.counter == 2 %}Clear communication{% else %}A secure modern platform{% endif %}</strong><div class="text-muted small">{% if forloop.counter == 1 %}Every visit is coordinated around the patient experience.{% elif forloop.counter == 2 %}Patients receive email updates at every stage.{% else %}Admins, staff and clinicians all work from the same view.{% endif %}</div></div></div>{% endfor %}</div></div>
+        <div class="col-12 col-lg-6"><div class="card-soft p-4"><h5 class="mb-3">Patient testimonials</h5><div class="d-flex flex-column gap-3">{% for review in testimonials %}<div class="border rounded-3 p-3"><div class="text-warning mb-2">{% for _ in '12345' %}{% if forloop.counter <= review.rating %}<i class="bi bi-star-fill"></i>{% else %}<i class="bi bi-star" style="opacity:.4"></i>{% endif %}{% endfor %}</div><p class="mb-2">“{{ review.quote }}”</p><strong>— {{ review.author }}</strong></div>{% empty %}<div class="border rounded-3 p-3"><p class="mb-0 text-muted">No testimonials available yet.</p></div>{% endfor %}</div></div></div>
     </div>
 </section>
 
 <section class="mb-5">
     <div class="card-soft p-4 p-md-5">
-        <div class="row g-4 align-items-center">
-            <div class="col-lg-7"><h3 class="section-title">Ready to experience calm, modern dental care?</h3><p class="text-muted">Book a visit, apply as a dentist or explore the clinic dashboard today.</p></div>
-            <div class="col-lg-5 text-lg-end"><a class="btn btn-primary" href="{% url 'register' %}">Get started</a></div>
+        <div class="row g-4 align-items-center text-center text-lg-start">
+            <div class="col-lg-8"><h3 class="section-title mb-2">Ready to experience calm, modern dental care?</h3><p class="text-muted mb-0">Book a visit, apply as a dentist or explore the clinic dashboard today.</p></div>
+            <div class="col-lg-4 text-lg-end"><a class="btn btn-primary w-100 w-lg-auto" href="{% url 'register' %}">Get started</a></div>
         </div>
     </div>
 </section>

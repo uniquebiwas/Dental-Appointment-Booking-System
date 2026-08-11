@@ -9,69 +9,84 @@
                 <h2 class="fw-bold mb-1">Dr. {{ dentist.user.get_full_name|default:dentist.user.username }}</h2>
                 <p class="text-muted mb-0">A focused view of your day, upcoming visits and completed cases.</p>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <a href="{% url 'dentist_availability' %}" class="btn btn-outline-primary">Manage availability</a>
-                <div class="pill pill-success">Ready</div>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <a href="{% url 'dentist_availability' %}" class="btn btn-outline-primary min-height-44">
+                    <i class="bi bi-calendar-check me-1"></i>Manage Availability
+                </a>
+                <div class="pill pill-success"><i class="bi bi-check-circle me-1"></i>Ready</div>
             </div>
         </div>
-        <div class="row g-4 mb-4">
-            <div class="col-md-6">
-                <div class="card-soft metric-card p-4">
-                    <div class="d-flex justify-content-between">
-                        <div><h6 class="text-muted">Today</h6><h3 class="fw-bold">{{ today|length }}</h3></div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-6">
+                <div class="card-soft metric-card p-3 p-md-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><h6 class="text-muted small mb-1">Today's Visits</h6><h3 class="fw-bold mb-0">{{ today|length }}</h3></div>
                         <div class="metric-icon"><i class="bi bi-calendar2-event"></i></div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card-soft metric-card p-4">
-                    <div class="d-flex justify-content-between">
-                        <div><h6 class="text-muted">Completed</h6><h3 class="fw-bold">{{ completed }}</h3></div>
+            <div class="col-6 col-md-6">
+                <div class="card-soft metric-card p-3 p-md-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div><h6 class="text-muted small mb-1">Completed Cases</h6><h3 class="fw-bold mb-0">{{ completed }}</h3></div>
                         <div class="metric-icon"><i class="bi bi-check2-circle"></i></div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="card-soft p-4">
-                    <h5 class="mb-3">Today’s patients</h5>
+            <div class="col-12 col-lg-8">
+                <div class="card-soft p-3 p-md-4">
+                    <h5 class="fw-bold mb-3">Today’s Patients</h5>
                     <div class="table-responsive">
-                        <table class="table align-middle">
-                            <thead><tr><th>Patient</th><th>Time</th><th>Service</th><th>Status</th></tr></thead>
+                        <table class="table align-middle text-nowrap">
+                            <thead><tr><th>Patient</th><th>Time</th><th>Service</th><th>Status</th><th>Action</th></tr></thead>
                             <tbody>
                                 {% for appointment in today %}
-                                <tr><td>{{ appointment.patient }}</td><td>{{ appointment.start_time }}</td><td>{{ appointment.service }}</td><td><span class="pill {{ appointment.status|status_badge_class }}">{{ appointment.status }}</span></td></tr>
-                                {% empty %}<tr><td colspan="4"><div class="empty-state">No patients scheduled today.</div></td></tr>{% endfor %}
+                                <tr>
+                                    <td><a href="{% url 'appointment_detail' appointment.pk %}" class="fw-semibold">{{ appointment.patient }}</a></td>
+                                    <td>{{ appointment.start_time|time:"H:i" }}</td>
+                                    <td>{{ appointment.service }}</td>
+                                    <td><span class="pill {{ appointment.status|status_badge_class }}">{{ appointment.status }}</span></td>
+                                    <td><a href="{% url 'appointment_detail' appointment.pk %}" class="btn btn-sm btn-outline-primary">Open</a></td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="5"><div class="empty-state py-4 text-center">No patients scheduled today.</div></td></tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <div class="card-soft p-4 mb-4">
-                    <h5 class="mb-3">Upcoming cases</h5>
+            <div class="col-12 col-lg-4">
+                <div class="card-soft p-3 p-md-4 mb-4">
+                    <h5 class="fw-bold mb-3">Upcoming Cases</h5>
                     <ul class="list-unstyled mb-0">
                         {% for appointment in upcoming %}
-                        <li class="py-2 border-bottom"><strong>{{ appointment.appointment_date }}</strong><div class="text-muted small">{{ appointment.patient }} • {{ appointment.service }}</div></li>
-                        {% empty %}<li class="empty-state">No upcoming visits.</li>{% endfor %}
+                        <li class="py-2 border-bottom">
+                            <strong>{{ appointment.appointment_date|date:"M d, Y" }}</strong>
+                            <div class="text-muted small">{{ appointment.patient }} • {{ appointment.service }}</div>
+                        </li>
+                        {% empty %}<li class="empty-state py-3 text-center">No upcoming visits.</li>{% endfor %}
                     </ul>
                 </div>
-                <div class="card-soft p-4">
-                    <h5 class="mb-3">Assigned appointments</h5>
+                <div class="card-soft p-3 p-md-4">
+                    <h5 class="fw-bold mb-3">Assigned Appointments</h5>
                     <ul class="list-unstyled mb-0">
                         {% for appointment in assigned_appointments %}
                         <li class="py-2 border-bottom">
-                            <div><strong>{{ appointment.appointment_date }} {{ appointment.start_time }}</strong></div>
+                            <div><strong>{{ appointment.appointment_date|date:"M d" }} at {{ appointment.start_time|time:"H:i" }}</strong></div>
                             <div class="text-muted small">{{ appointment.patient }} • {{ appointment.service }} • {{ appointment.status }}</div>
                             {% if appointment.notes %}
-                            <div class="mt-1 text-truncate text-muted small">Comments: {{ appointment.notes|truncatechars:100 }}</div>
+                            <div class="mt-1 text-truncate text-muted small">Notes: {{ appointment.notes|truncatechars:80 }}</div>
                             {% endif %}
                             <div class="mt-2">
                                 <a class="btn btn-sm btn-outline-secondary" href="{% url 'appointment_detail' appointment.pk %}">Details</a>
                             </div>
                         </li>
-                        {% empty %}<li class="empty-state">No assigned appointments.</li>{% endfor %}
+                        {% empty %}<li class="empty-state py-3 text-center">No assigned appointments.</li>{% endfor %}
                     </ul>
                 </div>
             </div>

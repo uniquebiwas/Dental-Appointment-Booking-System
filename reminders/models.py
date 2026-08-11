@@ -6,6 +6,10 @@ from appointments.models import Appointment
 
 class Reminder(models.Model):
     REMINDER_TYPE_CHOICES = (
+        ('Confirmation', 'Confirmation'),
+        ('Reschedule Notice', 'Reschedule Notice'),
+        ('Cancellation Notice', 'Cancellation Notice'),
+        ('No-Show Notice', 'No-Show Notice'),
         ('24 Hours Before', '24 Hours Before'),
         ('2 Hours Before', '2 Hours Before'),
         ('Follow-Up', 'Follow-Up'),
@@ -21,7 +25,7 @@ class Reminder(models.Model):
     )
 
     appointment = models.ForeignKey(Appointment, related_name='reminders', on_delete=models.CASCADE)
-    reminder_type = models.CharField(max_length=20, choices=REMINDER_TYPE_CHOICES)
+    reminder_type = models.CharField(max_length=40, choices=REMINDER_TYPE_CHOICES)
     channel = models.CharField(max_length=10, choices=CHANNEL_CHOICES)
     scheduled_for = models.DateTimeField()
     sent_at = models.DateTimeField(null=True, blank=True)

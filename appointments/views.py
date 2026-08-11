@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, time
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
@@ -12,6 +14,22 @@ from reminders.models import Notification
 from services.models import DentalService
 from .models import Appointment, AppointmentHistory, PatientVisit
 
+
+def _push_ws_notification(user_pk, title, message, notif_type='appointment'):
+    """Non-blocking helper – silently ignores errors."""
+    try:
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"notifications_{user_pk}",
+            {
+                "type": "send_notification",
+                "title": title,
+                "message": message,
+                "notification_type": notif_type,
+            }
+        )
+    except Exception:
+        pass
 
 def get_available_slots(dentist, date_obj, duration_minutes):
     available_slots = []
@@ -301,6 +319,9 @@ def appointment_detail(request, pk):
                 message=message,
                 notification_type='appointment',
             )
+            # Live WebSocket push to patient
+            _push_ws_notification(appointment.patient.user.pk, title, message)
+
             staff_users = User.objects.filter(role__in=['staff', 'admin'], is_active=True)
             for staff_user in staff_users:
                 Notification.objects.create(
@@ -310,6 +331,8 @@ def appointment_detail(request, pk):
                     message=message,
                     notification_type='appointment',
                 )
+                # Live WebSocket push to each staff/admin
+                _push_ws_notification(staff_user.pk, title, message)
         messages.success(request, 'Dentist feedback saved.')
         return redirect('appointment_detail', pk=pk)
 

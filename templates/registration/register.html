@@ -3,85 +3,70 @@
 {% block content %}
 
 <div class="row g-4 align-items-stretch">
-
-    <div class="col-lg-5">
-        <div class="auth-hero h-100">
-            <div class="p-4 p-md-5">
-
+    <div class="col-12 col-lg-5">
+        <div class="auth-hero h-100 p-4 p-md-5 d-flex flex-column justify-content-between">
+            <div>
                 <div class="pill pill-success mb-3">
-                    <i class="bi bi-shield-check"></i> Trusted care
+                    <i class="bi bi-shield-check me-1"></i> Trusted care
                 </div>
 
                 <h2 class="fw-bold mb-3">
                     Create your SmileCare account
                 </h2>
 
-                <p class="text-muted">
+                <p class="text-white-80 mb-4" style="color: rgba(255,255,255,0.85);">
                     Join our modern dental clinic experience and book appointments with confidence.
                 </p>
 
-                <div class="mt-4">
-                    <div class="d-flex gap-2 mb-2">
-                        <i class="bi bi-check-circle-fill text-success"></i>
+                <div class="d-flex flex-column gap-3 mt-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-white fs-5"></i>
                         <span>Fast secure registration</span>
                     </div>
 
-                    <div class="d-flex gap-2 mb-2">
-                        <i class="bi bi-check-circle-fill text-success"></i>
-                        <span>Dedicated reminders and updates</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-white fs-5"></i>
+                        <span>Dedicated reminders and email updates</span>
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <i class="bi bi-check-circle-fill text-success"></i>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-white fs-5"></i>
                         <span>Access to your care timeline</span>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
 
-
-    <div class="col-lg-7">
+    <div class="col-12 col-lg-7">
         <div class="card-soft p-4 p-md-5 h-100">
-
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-4">
                 <div>
                     <h3 class="fw-bold mb-1">Register</h3>
-                    <p class="text-muted mb-0">
-                        Choose how you’d like to join.
-                    </p>
+                    <p class="text-muted mb-0">Choose how you’d like to join.</p>
                 </div>
-
-                <a class="btn btn-outline-secondary btn-sm"
-                   href="{% url 'login' %}">
+                <a class="btn btn-outline-secondary btn-sm" href="{% url 'login' %}">
                     Login instead
                 </a>
             </div>
-
 
             <form method="post">
                 {% csrf_token %}
 
                 <div class="row g-3">
-
                     {% for field in form %}
-
                         {% if field.name == 'account_type' %}
-
                         <!-- Account Type -->
                         <div class="col-12">
-
                             <label class="form-label d-block mb-2">
                                 {{ field.label }}
                             </label>
 
-                            <div class="account-type-group">
+                            <div class="account-type-group d-flex flex-wrap gap-3">
                                 {% for radio in field %}
-                                    <div class="form-check">
+                                    <div class="form-check border rounded-3 p-2 px-3 bg-light d-flex align-items-center gap-2">
                                         {{ radio.tag }}
-                                        <label class="form-check-label"
-                                               for="{{ radio.id_for_label }}">
+                                        <label class="form-check-label mb-0 fw-semibold" for="{{ radio.id_for_label }}">
                                             {{ radio.choice_label }}
                                         </label>
                                     </div>
@@ -89,83 +74,41 @@
                             </div>
 
                             {% if field.help_text %}
-                                <div class="form-text">
-                                    {{ field.help_text }}
-                                </div>
+                                <div class="form-text mt-1">{{ field.help_text }}</div>
                             {% endif %}
-
                             {% if field.errors %}
-                                <div class="text-danger small">
-                                    {{ field.errors|join:', ' }}
-                                </div>
+                                <div class="text-danger small mt-1">{{ field.errors|join:', ' }}</div>
                             {% endif %}
-
                         </div>
 
                         {% else %}
 
                         <!-- Other Fields -->
                         <div class="col-12">
-
-                            <label class="form-label"
-                                   for="id_{{ field.name }}">
+                            <label class="form-label" for="id_{{ field.name }}">
                                 {{ field.label }}
                             </label>
 
                             {{ field }}
 
                             {% if field.help_text %}
-                                <div class="form-text">
-                                    {{ field.help_text }}
-                                </div>
+                                <div class="form-text mt-1">{{ field.help_text }}</div>
                             {% endif %}
 
                             {% if field.errors %}
-                                <div class="text-danger small">
-                                    {{ field.errors|join:', ' }}
-                                </div>
+                                <div class="text-danger small mt-1">{{ field.errors|join:', ' }}</div>
                             {% endif %}
-
                         </div>
-
                         {% endif %}
-
                     {% endfor %}
-
                 </div>
 
-                <button class="btn btn-primary mt-4 w-100"
-                        type="submit">
-                    Create account
+                <button class="btn btn-primary mt-4 w-100" type="submit">
+                    <i class="bi bi-person-plus me-2"></i>Create account
                 </button>
-
             </form>
-
         </div>
     </div>
-
 </div>
-
-
-<!-- Minimal CSS -->
-<style>
-    .account-type-group {
-        display: flex;
-        gap: 25px;
-        flex-wrap: wrap;
-    }
-
-    .account-type-group .form-check {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    @media (max-width: 576px) {
-        .account-type-group {
-            gap: 15px;
-        }
-    }
-</style>
 
 {% endblock %}

@@ -1,0 +1,20 @@
+Hello {{ patient_name }},
+
+Here is an update regarding your dental appointment at SmileCare Dental Clinic:
+
+STATUS: {{ appointment.status }}
+Appointment ID: {{ appointment.appointment_id }}
+Date & Time: {{ appointment.appointment_date }} at {{ appointment.start_time }}
+Attending Dentist: Dr. {{ appointment.dentist.user.get_full_name|default:appointment.dentist.user.username }}
+Service: {{ appointment.service.name }} ({{ appointment.service.duration }} mins)
+{% if appointment.notes %}
+Dentist Comments: {{ appointment.notes }}
+{% endif %}
+{% if appointment.cancellation_reason and appointment.status == 'Cancelled' %}
+Cancellation Reason: {{ appointment.cancellation_reason }}
+{% endif %}
+
+If you have any questions or need to make changes, please access your dashboard or contact SmileCare Dental Clinic.
+
+SmileCare Dental Clinic
+Modern Dental Care & Patient Management

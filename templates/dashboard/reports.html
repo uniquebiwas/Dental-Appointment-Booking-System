@@ -4,27 +4,58 @@
 <div class="dashboard-shell">
     {% include 'dashboard/_sidebar.html' %}
     <div class="main-panel">
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-            <h3 class="fw-bold mb-2">Reports</h3>
-            <p class="text-muted mb-0">A concise view of clinic activity and appointment distribution.</p>
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-4">
+            <div>
+                <h3 class="fw-bold mb-1">Reports & Analytics</h3>
+                <p class="text-muted mb-0">A concise view of clinic activity and appointment distribution.</p>
+            </div>
+            <div class="pill pill-success"><i class="bi bi-graph-up me-1"></i>Updated</div>
         </div>
-        <div class="pill pill-success">Updated</div>
-    </div>
-    <div class="row g-3 mb-4">
-        <div class="col-md-4"><div class="card-soft p-3"><h6 class="text-muted">Patients</h6><h3 class="fw-bold">{{ patient_count }}</h3></div></div>
-        <div class="col-md-4"><div class="card-soft p-3"><h6 class="text-muted">Services</h6><h3 class="fw-bold">{{ service_count }}</h3></div></div>
-        <div class="col-md-4"><div class="card-soft p-3"><h6 class="text-muted">Appointments</h6><h3 class="fw-bold">{{ appointment_count }}</h3></div></div>
-    </div>
-    <div class="table-responsive">
-        <table class="table align-middle">
-            <thead><tr><th>Appointment</th><th>Patient</th><th>Status</th></tr></thead>
-            <tbody>
-                {% for appointment in appointments %}
-                <tr><td>{{ appointment.appointment_id }}</td><td>{{ appointment.patient }}</td><td><span class="pill {{ appointment.status|status_badge_class }}">{{ appointment.status }}</span></td></tr>
-                {% empty %}<tr><td colspan="3"><div class="empty-state">No reports available.</div></td></tr>{% endfor %}
-            </tbody>
-        </table>
+
+        <div class="row g-3 mb-4">
+            <div class="col-4 col-md-4">
+                <div class="card-soft p-3 p-md-4">
+                    <h6 class="text-muted small mb-1">Total Patients</h6>
+                    <h3 class="fw-bold mb-0">{{ patient_count }}</h3>
+                </div>
+            </div>
+            <div class="col-4 col-md-4">
+                <div class="card-soft p-3 p-md-4">
+                    <h6 class="text-muted small mb-1">Active Services</h6>
+                    <h3 class="fw-bold mb-0">{{ service_count }}</h3>
+                </div>
+            </div>
+            <div class="col-4 col-md-4">
+                <div class="card-soft p-3 p-md-4">
+                    <h6 class="text-muted small mb-1">Total Appointments</h6>
+                    <h3 class="fw-bold mb-0">{{ appointment_count }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-soft p-3 p-md-4">
+            <h5 class="fw-bold mb-3">Appointment Distribution Report</h5>
+            <div class="table-responsive">
+                <table class="table align-middle text-nowrap">
+                    <thead>
+                        <tr><th>Appointment ID</th><th>Patient</th><th>Dentist</th><th>Date</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr>
+                            <td><a href="{% url 'appointment_detail' appointment.pk %}" class="fw-bold text-primary">{{ appointment.appointment_id }}</a></td>
+                            <td>{{ appointment.patient }}</td>
+                            <td>{{ appointment.dentist }}</td>
+                            <td>{{ appointment.appointment_date|date:"M d, Y" }}</td>
+                            <td><span class="pill {{ appointment.status|status_badge_class }}">{{ appointment.status }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5"><div class="empty-state py-4 text-center">No reports available.</div></td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
