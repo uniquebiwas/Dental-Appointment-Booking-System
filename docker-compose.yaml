@@ -1,0 +1,22 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: dental-clinic
+
+    ports:
+      - "8000:8000"
+
+    restart: unless-stopped
+
+    volumes:
+      - db_data:/app/data
+      - static_data:/app/staticfiles
+      - media_data:/app/media
+
+volumes:
+  db_data:
+  static_data:
+  media_data:

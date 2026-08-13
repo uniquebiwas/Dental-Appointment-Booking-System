@@ -1,2 +1,43 @@
-Django>=6.1,<6.2
-python-dotenv>=1.0.0
+# Core Django stack
+Django==6.1
+asgiref==3.12.1
+sqlparse==0.5.5
+
+# ASGI / WebSocket server
+daphne==4.2.3
+channels==4.3.2
+Twisted==26.4.0
+
+# Twisted dependencies
+autobahn==26.7.1
+Automat==25.4.16
+constantly==23.10.4
+hyperlink==21.0.0
+Incremental==24.11.0
+service-identity==26.1.0
+txaio==26.6.1
+
+# Cryptography & security
+cryptography==50.0.0
+pyOpenSSL==26.4.0
+bcrypt==5.0.0
+PyNaCl==1.6.1
+cffi==2.0.0
+pycparser==2.23
+
+# Serialisation / encoding
+attrs==26.1.0
+cbor2==6.1.4
+msgpack==1.2.1
+ujson==5.13.0
+
+# Utilities
+python-dotenv==1.2.2
+idna==3.18
+packaging==26.3
+typing_extensions==4.16.0
+tzdata==2026.3
+zope.interface==8.5
+
+# Static files serving (production)
+whitenoise==6.9.0
