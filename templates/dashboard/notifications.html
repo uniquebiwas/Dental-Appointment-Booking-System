@@ -15,7 +15,7 @@
     </div>
     <div class="d-flex flex-column gap-3">
         {% for notification in notifications %}
-        <div class="border rounded-3 p-3 notification-open" data-pk="{{ notification.pk }}" data-is-read="{{ notification.is_read|yesno:"true,false" }}" data-has-appointment="{% if notification.appointment %}true{% else %}false{% endif %}" data-title="{{ notification.title|escape }}" data-message="{{ notification.message|escape }}" {% if notification.appointment %}data-appointment-id="{{ notification.appointment.appointment_id|escape }}" data-appointment-patient="{{ notification.appointment.patient|escape }}" data-appointment-dentist="Dr. {{ notification.appointment.dentist.user.get_full_name|default:notification.appointment.dentist.user.username|escape }}" data-appointment-service="{{ notification.appointment.service.name|escape }}" data-appointment-date="{{ notification.appointment.appointment_date|date:'M. d, Y' }}" data-appointment-time="{{ notification.appointment.start_time|time:'g:i a' }} - {{ notification.appointment.end_time|time:'g:i a' }}" data-appointment-status="{{ notification.appointment.status|escape }}" data-appointment-notes="{{ notification.appointment.notes|default_if_none:''|escape }}"{% endif %}>
+        <div class="border rounded-3 p-3 notification-open" data-pk="{{ notification.pk }}" data-is-read="{{ notification.is_read|yesno:"true,false" }}" data-has-appointment="{% if notification.appointment %}true{% else %}false{% endif %}" data-title="{{ notification.title|escape }}" data-message="{{ notification.message|escape }}" {% if notification.appointment %}data-appointment-url="{% url 'appointment_detail' notification.appointment.pk %}" data-appointment-id="{{ notification.appointment.appointment_id|escape }}" data-appointment-patient="{{ notification.appointment.patient|escape }}" data-appointment-dentist="Dr. {{ notification.appointment.dentist.user.get_full_name|default:notification.appointment.dentist.user.username|escape }}" data-appointment-service="{{ notification.appointment.service.name|escape }}" data-appointment-date="{{ notification.appointment.appointment_date|date:'M. d, Y' }}" data-appointment-time="{{ notification.appointment.start_time|time:'g:i a' }} - {{ notification.appointment.end_time|time:'g:i a' }}" data-appointment-status="{{ notification.appointment.status|escape }}" data-appointment-notes="{{ notification.appointment.notes|default_if_none:''|escape }}"{% endif %}>
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <strong>{{ notification.title }}</strong>
@@ -46,7 +46,7 @@
                 {% if notification.appointment.notes %}
                 <div class="mt-2"><strong>Comments:</strong> <div class="text-muted small">{{ notification.appointment.notes|truncatechars:140 }}</div></div>
                 {% endif %}
-                <div class="mt-2"><a href="{% url 'appointment_detail' notification.appointment.pk %}" class="btn btn-sm btn-outline-secondary">View appointment</a></div>
+                <div class="mt-2"><a href="{% url 'appointment_detail' notification.appointment.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-folder2-open me-1"></i>Open Case</a></div>
             </div>
             {% endif %}
             <small class="text-muted">{{ notification.created_at }}</small>
@@ -81,6 +81,7 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <a id="notifDetailOpenCaseBtn" href="#" class="btn btn-primary" style="display: none;"><i class="bi bi-folder2-open me-1"></i>Open Case</a>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -138,6 +139,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const message = el.dataset.message || '';
                 const detailModal = document.getElementById('notificationDetailModal');
                 const hasAppointment = el.dataset.hasAppointment === 'true';
+                const openCaseBtn = detailModal ? detailModal.querySelector('#notifDetailOpenCaseBtn') : null;
+
                 if (detailModal) {
                     detailModal.querySelector('#notifDetailTitle').innerText = title;
                     detailModal.querySelector('#notifDetailMessage').innerText = message;
@@ -159,8 +162,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         } else {
                             notesRow.style.display = 'none';
                         }
+                        if (openCaseBtn && el.dataset.appointmentUrl) {
+                            openCaseBtn.href = el.dataset.appointmentUrl;
+                            openCaseBtn.style.display = 'inline-block';
+                        } else if (openCaseBtn) {
+                            openCaseBtn.style.display = 'none';
+                        }
                     } else {
                         apptSection.style.display = 'none';
+                        if (openCaseBtn) openCaseBtn.style.display = 'none';
                     }
                     new bootstrap.Modal(detailModal).show();
                 }
@@ -172,6 +182,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     detailModal.querySelector('#notifDetailTitle').innerText = title;
                     detailModal.querySelector('#notifDetailMessage').innerText = message;
                     detailModal.querySelector('#notifDetailAppointment').style.display = 'none';
+                    const openCaseBtn = detailModal.querySelector('#notifDetailOpenCaseBtn');
+                    if (openCaseBtn) openCaseBtn.style.display = 'none';
                     new bootstrap.Modal(detailModal).show();
                 }
             });

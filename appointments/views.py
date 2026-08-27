@@ -212,7 +212,32 @@ def book_appointment(request):
                     changed_by=request.user,
                     reason='Appointment booked',
                 )
-                messages.success(request, 'Appointment created successfully for %s.' % patient.user.get_full_name() or patient.user.username)
+                # Create DB Notification + WS push for dentist
+                notif_title = f"New Appointment Booked — {appointment.appointment_id}"
+                notif_msg = (
+                    f"A new appointment has been booked for "
+                    f"{patient.user.get_full_name() or patient.user.username} on "
+                    f"{date_obj.strftime('%b. %d, %Y')} at {time_obj.strftime('%I:%M %p')}."
+                )
+                Notification.objects.create(
+                    user=dentist.user,
+                    appointment=appointment,
+                    title=notif_title,
+                    message=notif_msg,
+                    notification_type='appointment',
+                )
+                _push_ws_notification(dentist.user.pk, notif_title, notif_msg)
+                # Notify staff/admin too
+                for staff_user in User.objects.filter(role__in=['staff', 'admin'], is_active=True):
+                    Notification.objects.create(
+                        user=staff_user,
+                        appointment=appointment,
+                        title=notif_title,
+                        message=notif_msg,
+                        notification_type='appointment',
+                    )
+                    _push_ws_notification(staff_user.pk, notif_title, notif_msg)
+                messages.success(request, 'Appointment created successfully for %s.' % (patient.user.get_full_name() or patient.user.username))
                 return redirect('appointment_detail', pk=appointment.pk)
 
         if selected_dentist and selected_service and appointment_date:
@@ -347,6 +372,9 @@ def appointment_detail(request, pk):
 @login_required
 def appointment_history(request):
     q = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    date_from = request.GET.get('date_from', '').strip()
+    date_to = request.GET.get('date_to', '').strip()
     if request.user.is_admin() or request.user.is_staff_role():
         appointments = Appointment.objects.all()
     elif request.user.is_dentist_approved():
@@ -363,8 +391,30 @@ def appointment_history(request):
             Q(status__icontains=q) |
             Q(service__name__icontains=q)
         )
+    if status_filter:
+        appointments = appointments.filter(status=status_filter)
+    if date_from:
+        try:
+            from datetime import date as _date
+            appointments = appointments.filter(appointment_date__gte=datetime.strptime(date_from, '%Y-%m-%d').date())
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            from datetime import date as _date
+            appointments = appointments.filter(appointment_date__lte=datetime.strptime(date_to, '%Y-%m-%d').date())
+        except ValueError:
+            pass
     appointments = appointments.order_by('-appointment_date', '-start_time')
-    return render(request, 'dashboard/appointment_history.html', {'appointments': appointments, 'q': q})
+    status_choices = ['Pending', 'Confirmed', 'Checked-In', 'Completed', 'Cancelled', 'Rescheduled', 'No-Show']
+    return render(request, 'dashboard/appointment_history.html', {
+        'appointments': appointments,
+        'q': q,
+        'status_filter': status_filter,
+        'date_from': date_from,
+        'date_to': date_to,
+        'status_choices': status_choices,
+    })
 
 
 @login_required
@@ -377,8 +427,9 @@ def cancel_appointment(request, pk):
 
     if request.method == 'POST':
         previous_status = appointment.status
+        cancellation_reason = request.POST.get('reason', 'No reason provided')
         appointment.status = 'Cancelled'
-        appointment.cancellation_reason = request.POST.get('reason', 'No reason provided')
+        appointment.cancellation_reason = cancellation_reason
         appointment.cancelled_at = datetime.now()
         appointment.save()
         AppointmentHistory.objects.create(
@@ -386,8 +437,52 @@ def cancel_appointment(request, pk):
             previous_status=previous_status,
             new_status='Cancelled',
             changed_by=request.user,
-            reason=appointment.cancellation_reason
+            reason=cancellation_reason
         )
+
+        # Notifications for cancellation
+        cancelled_by_name = request.user.get_full_name() or request.user.username
+        cancel_title = f"Appointment {appointment.appointment_id} Cancelled"
+        cancel_msg = (
+            f"{cancelled_by_name} cancelled appointment {appointment.appointment_id} "
+            f"(originally on {appointment.appointment_date.strftime('%b. %d, %Y')} "
+            f"at {appointment.start_time.strftime('%I:%M %p')}). "
+            f"Reason: {cancellation_reason}"
+        )
+
+        # 1. Notify Dentist (unless dentist is the one cancelling)
+        if appointment.dentist and appointment.dentist.user and appointment.dentist.user != request.user:
+            Notification.objects.create(
+                user=appointment.dentist.user,
+                appointment=appointment,
+                title=cancel_title,
+                message=cancel_msg,
+                notification_type='appointment',
+            )
+            _push_ws_notification(appointment.dentist.user.pk, cancel_title, cancel_msg)
+
+        # 2. Notify Patient (unless patient is the one cancelling)
+        if appointment.patient and appointment.patient.user and appointment.patient.user != request.user:
+            Notification.objects.create(
+                user=appointment.patient.user,
+                appointment=appointment,
+                title=cancel_title,
+                message=cancel_msg,
+                notification_type='appointment',
+            )
+            _push_ws_notification(appointment.patient.user.pk, cancel_title, cancel_msg)
+
+        # 3. Notify Staff and Admin (excluding the actor)
+        for staff_user in User.objects.filter(role__in=['staff', 'admin'], is_active=True).exclude(pk=request.user.pk):
+            Notification.objects.create(
+                user=staff_user,
+                appointment=appointment,
+                title=cancel_title,
+                message=cancel_msg,
+                notification_type='appointment',
+            )
+            _push_ws_notification(staff_user.pk, cancel_title, cancel_msg)
+
         messages.success(request, 'Appointment cancelled.')
         return redirect('appointment_detail', pk=appointment.pk)
     return render(request, 'dashboard/cancel_appointment.html', {'appointment': appointment})
@@ -423,6 +518,8 @@ def reschedule_appointment(request, pk):
                 available_slots = get_available_slots(appointment.dentist, date_obj, appointment.service.duration or 30)[0]
             else:
                 previous_status = appointment.status
+                previous_date_str = appointment.appointment_date.strftime('%b. %d, %Y')
+                previous_time_str = f"{appointment.start_time.strftime('%I:%M %p')} - {appointment.end_time.strftime('%I:%M %p')}"
                 appointment.appointment_date = date_obj
                 appointment.start_time = time_obj
                 appointment.end_time = end_time
@@ -435,6 +532,51 @@ def reschedule_appointment(request, pk):
                     changed_by=request.user,
                     reason='Appointment rescheduled',
                 )
+
+                # Send notifications to Dentist, Patient, and Staff/Admin
+                rescheduled_by_name = request.user.get_full_name() or request.user.username
+                new_date_str = date_obj.strftime('%b. %d, %Y')
+                new_time_str = f"{time_obj.strftime('%I:%M %p')} - {end_time.strftime('%I:%M %p')}"
+                title = f"Appointment {appointment.appointment_id} Rescheduled"
+                message = (
+                    f"{rescheduled_by_name} rescheduled appointment {appointment.appointment_id} "
+                    f"from {previous_date_str} ({previous_time_str}) to {new_date_str} ({new_time_str})."
+                )
+
+                # 1. Notify Dentist
+                if appointment.dentist and appointment.dentist.user:
+                    Notification.objects.create(
+                        user=appointment.dentist.user,
+                        appointment=appointment,
+                        title=title,
+                        message=message,
+                        notification_type='appointment',
+                    )
+                    _push_ws_notification(appointment.dentist.user.pk, title, message)
+
+                # 2. Notify Patient (if not rescheduled by patient themselves or if patient user exists)
+                if appointment.patient and appointment.patient.user and appointment.patient.user != request.user:
+                    Notification.objects.create(
+                        user=appointment.patient.user,
+                        appointment=appointment,
+                        title=title,
+                        message=message,
+                        notification_type='appointment',
+                    )
+                    _push_ws_notification(appointment.patient.user.pk, title, message)
+
+                # 3. Notify Staff and Admin users (excluding current actor if applicable)
+                staff_users = User.objects.filter(role__in=['staff', 'admin'], is_active=True).exclude(pk=request.user.pk)
+                for staff_user in staff_users:
+                    Notification.objects.create(
+                        user=staff_user,
+                        appointment=appointment,
+                        title=title,
+                        message=message,
+                        notification_type='appointment',
+                    )
+                    _push_ws_notification(staff_user.pk, title, message)
+
                 messages.success(request, 'Appointment rescheduled.')
                 return redirect('appointment_detail', pk=appointment.pk)
 

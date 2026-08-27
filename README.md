@@ -22,4 +22,4 @@ Open http://127.0.0.1:8000/ in your browser.
 
 
 need to craete docker and docker compose for this application
-when patient or staff book and appoinment the specific doctor should be the notification live 
+when patient or staff book and appoinment the specific doctor should get the notification live 

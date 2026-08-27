@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Appointment</title>
+</head>
+<body>
+    <form method="post" action="{% url 'book_appointment' %}">
+        {% csrf_token %}
+        <!-- Add your form fields here -->
+        <button type="submit">Book Appointment</button>
+    </form>
+</body>
+</html>
